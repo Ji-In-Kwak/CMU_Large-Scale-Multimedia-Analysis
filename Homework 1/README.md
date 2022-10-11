@@ -2,7 +2,7 @@
 ## Homework 1 
 
 ### Task 1
-Follow the instruction from the Homework 1 github.
+Follow the instruction from the Homework 1 [github](https://github.com/KevinQian97/11755-ISR-HW1).
 
 ### Task 2
 After extracting the mfcc features, we can train each of SVM and MLP classifiers.
