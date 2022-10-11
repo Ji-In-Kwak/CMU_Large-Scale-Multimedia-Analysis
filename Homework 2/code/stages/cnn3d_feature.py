@@ -3,7 +3,7 @@ import torch
 from pyturbo import Stage
 from torch.backends import cudnn
 from torchvision.models import video as video_models
-from torchvision.models.feature_extraction import create_feature_extractor
+from torchvision.models.feature_extraction import create_feature_extractor, get_graph_node_names
 
 
 class CNN3DFeature(Stage):
@@ -36,8 +36,15 @@ class CNN3DFeature(Stage):
                 self.device = 'cpu'
                 self.logger.warn('No available GPUs, running on CPU.')
             # TODO: build 3D CNN model with weights and input transforms
-            raise NotImplementedError
+            weights = getattr(video_models, self.weight_name).DEFAULT
+            self.transforms = weights.transforms()
+            base_model = getattr(video_models, self.model_name)(weights=weights)
+            print(get_graph_node_names(base_model))
+            self.model = create_feature_extractor(
+                base_model, {self.node_name: 'feature'})
+            # raise NotImplementedError
             self.model = self.model.to(self.device).eval()
+            # self.model = self.model.to('cpu').eval()
 
     def extract_cnn3d_features(self, clip: np.ndarray) -> np.ndarray:
         """
@@ -50,7 +57,16 @@ class CNN3DFeature(Stage):
         # Then apply self.transforms to batch to get model input.
         # Finally apply self.model on the input to get features.
         # Wrap the model with torch.no_grad() to avoid OOM.
-        raise NotImplementedError
+        # raise NotImplementedError
+        clip = clip.unsqueeze(0)
+        clip = torch.permute(clip, (0, 1, 4, 2, 3))
+        clip = self.transforms(clip)
+        with torch.no_grad():
+            output = self.model(clip.to(self.device))
+            # output = self.model(clip.to('cpu'))
+        # print(output['feature'])
+        return output['feature'].squeeze().to('cpu')
+
 
     def process(self, task):
         task.start(self)

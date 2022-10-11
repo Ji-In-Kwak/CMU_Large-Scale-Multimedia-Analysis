@@ -19,7 +19,7 @@ class ExtractCNN3DFeature(System):
         self.gpu_resources = gpu_resources * self.args.pipeline_per_gpu
         if len(self.gpu_resources) == 0:
             # CPU only
-            return max(1, len(resources.get('cpu')) // 2)
+            return max(1, len(resources.get('cpu')) // 4)
         else:
             return len(self.gpu_resources)
 
@@ -29,14 +29,14 @@ class ExtractCNN3DFeature(System):
         io_resources = resources.select(cpu=(0, 1))
         cnn_resources = resources + self.gpu_resources.pop(0)
         stages = [
-            LoadVideo(io_resources, video_dir=self.args.video_dir,
+            LoadVideo(io_resources, video_dir=self.args.video_dir, cnn_dir = self.args.cnn_dir,
                       target_frame_rate=self.args.frame_rate,
                       batch_size=self.args.clip_duration),
             CNN3DFeature(cnn_resources,
                          # TODO: choose the model, weight, and node to use
-                         model_name='',
-                         weight_name='',
-                         node_name='',
+                         model_name='r2plus1d_18',
+                         weight_name='R2Plus1D_18_Weights',
+                         node_name='avgpool',
                          replica_per_gpu=self.args.replica_per_gpu),
             SaveFeature(io_resources, feature_dir=self.args.cnn_dir),
         ]
@@ -50,7 +50,7 @@ def parse_args(argv=None):
         '--video_dir', default=osp.join(
             osp.dirname(__file__), '../data/videos'))
     parser.add_argument(
-        '--cnn_dir', default=osp.join(osp.dirname(__file__), '../data/cnn3d'))
+        '--cnn_dir', default=osp.join(osp.dirname(__file__), '../data/cnn2d_1d'))
     parser.add_argument('--frame_rate', type=int, default=15)
     parser.add_argument('--clip_duration', type=int, default=32)
     parser.add_argument('--pipeline_per_gpu', type=int, default=2)

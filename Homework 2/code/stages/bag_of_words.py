@@ -37,7 +37,7 @@ class BagOfWords(Stage):
             dst = []
             for cluster in self.weight:
                 dst.append(distance.euclidean(feat, cluster))
-            nearest_c = np.argmax(dst)
+            nearest_c = np.argmin(dst)
             bags[nearest_c] += 1
         
         return bags
@@ -51,7 +51,7 @@ class BagOfWords(Stage):
         """
         # TODO: Aggregate frame-level bags into a video-level feature.
         # raise NotImplementedError
-        pooled_vector = np.max(bags, axis=0)
+        pooled_vector = np.mean(bags, axis=0)
         return pooled_vector
 
     def process(self, task):

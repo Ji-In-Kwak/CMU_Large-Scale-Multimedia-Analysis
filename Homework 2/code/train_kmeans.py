@@ -22,7 +22,7 @@ def select_features(features: List[np.ndarray]) -> np.ndarray:
     # TODO: select subset of features for clustering
     selected_features = []
     for feat in features:
-        selected_ixs = np.random.randint(0, len(feat), 20)   # a subset of locations from each selected frame,
+        selected_ixs = np.random.randint(0, len(feat), 15)   # a subset of locations from each selected frame,
         selected_features.append(feat[selected_ixs, :])
 
     # raise NotImplementedError
@@ -60,7 +60,7 @@ def main(args):
     worker_fn = functools.partial(worker, args=args)
     map_fn = process_map if not args.debug else map
     video_features = np.concatenate([*map_fn(worker_fn, video_ids)])
-    kmeans = KMeans(args.num_clusters, random_state=args.seed, verbose=1)
+    kmeans = KMeans(args.num_clusters, random_state=args.seed, verbose=1, max_iter=100)
     kmeans.fit(video_features)
     os.makedirs(args.model_dir, exist_ok=True)
     model_path = osp.join(args.model_dir, f'{args.model_name}.pkl')

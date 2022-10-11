@@ -32,7 +32,7 @@ def main(args):
         filename='{epoch}-{step}-{val_acc:.4f}', monitor='val_acc',
         mode='max', save_top_k=-1)
     early_stop_callback = EarlyStopping(
-        'val_acc', patience=args.earlystop_patience, mode='max', verbose=True)
+        'val_loss', patience=args.earlystop_patience, mode='min', verbose=True)
     trainer = pl.Trainer.from_argparse_args(
         args, logger=logger,
         callbacks=[checkpoint_callback, early_stop_callback])

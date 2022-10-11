@@ -42,16 +42,18 @@ class FeatureDataset(Dataset):
         return feature, label
 
 
-class FeatureDataModule(pl.LightningDataModule):
+class FeatureDataModule_eval(pl.LightningDataModule):
 
     def __init__(self, hparams):
-        super(FeatureDataModule, self).__init__()
+        super(FeatureDataModule_eval, self).__init__()
         self.save_hyperparameters(hparams)
         train_val_df = pd.read_csv(self.hparams.train_val_list_file)
         self.train_df, self.val_df = train_test_split(
             train_val_df, test_size=self.hparams.test_frac,
             random_state=self.hparams.split_seed)
-        self.test_df = pd.read_csv(self.hparams.test_list_file)
+        # self.test_df = pd.read_csv(self.hparams.test_list_file)
+        # self.test_df = pd.read_csv('data/labels/val.csv')
+        self.test_df = self.val_df
         self.feature_dir = self.hparams.feature_dir
         self.batch_size = self.hparams.batch_size
 
@@ -74,6 +76,7 @@ class FeatureDataModule(pl.LightningDataModule):
         return DataLoader(self.test_set, batch_size=self.batch_size,
                           pin_memory=True,
                           num_workers=len(psutil.Process().cpu_affinity()))
+    
 
     @classmethod
     def add_argparse_args(cls, parent_parser):

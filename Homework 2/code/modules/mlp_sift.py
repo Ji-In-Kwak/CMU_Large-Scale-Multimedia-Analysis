@@ -11,15 +11,32 @@ class MlpClassifier(pl.LightningModule):
     def __init__(self, hparams):
         super(MlpClassifier, self).__init__()
         self.save_hyperparameters(hparams)
-        
+        print(self.hparams.num_features)
+        # layers = [
+        #     # TODO: define model layers here
+        #     # Input self.hparams.num_features
+        #     # Output self.hparams.num_classes
+        #     torch.nn.Linear(self.hparams.num_features, 256),
+        #     torch.nn.ReLU(),
+        #     torch.nn.Dropout(0.25),
+        #     torch.nn.Linear(256, 512),
+        #     torch.nn.BatchNorm1d(512),
+        #     torch.nn.ReLU(),
+        #     torch.nn.Dropout(0.25),
+        #     torch.nn.Linear(512, 1024),
+        #     torch.nn.BatchNorm1d(1024),
+        #     torch.nn.ReLU(),
+        #     torch.nn.Dropout(0.25),
+        #     torch.nn.Linear(1024, self.hparams.num_classes)
+        # ]
         layers = [
             torch.nn.Linear(self.hparams.num_features, 1024),
             torch.nn.BatchNorm1d(1024),
             torch.nn.ReLU(),
-            torch.nn.Linear(1024, 1024),
-            torch.nn.BatchNorm1d(1024),
+            torch.nn.Linear(1024, 512),
+            torch.nn.BatchNorm1d(512),
             torch.nn.ReLU(),
-            torch.nn.Linear(1024, self.hparams.num_classes)
+            torch.nn.Linear(512, self.hparams.num_classes)
         ]
         # raise NotImplementedError
         self.model = nn.Sequential(*layers)
@@ -31,7 +48,6 @@ class MlpClassifier(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        y = y.type(torch.LongTensor).cuda()
         y_hat = self(x)
         loss = self.loss(y_hat, y)
         return loss
@@ -55,8 +71,8 @@ class MlpClassifier(pl.LightningModule):
         # The simplest form would be `return torch.optim.Adam(...)`
         # For more advanced usages, see https://pytorch-lightning.readthedocs.io/en/latest/common/lightning_module.html#configure-optimizers
         # raise NotImplementedError
-        optimizer = torch.optim.AdamW(self.model.parameters(), self.hparams.learning_rate, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=3, eta_min=0)
+        optimizer = torch.optim.AdamW(self.model.parameters(), self.hparams.learning_rate, betas=(0.9, 0.999), eps=1e-08)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=2, eta_min=0)
         return {"optimizer" : optimizer, "lr_scheduler" : scheduler}
         # return optimizer
 
